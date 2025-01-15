@@ -1,0 +1,11 @@
+# List of specific objects to detect.
+# Use 'all' to detect any object or provide a comma-separated list of object names
+objects_to_detect: "person, car, traffic light"
+
+# Recording settings
+recording_duration: 30    # Duration in seconds to keep recording after the last detection
+buffer_size: 50           # Number of frames to buffer before starting recording
+reconnect_interval: 5     # Time in seconds to wait before attempting camera reconnection
+
+# Paths (optional customization)
+recordings_folder: recordings

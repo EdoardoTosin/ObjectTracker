@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  object-tracker:
+    build: .
+    container_name: object-tracker
+    restart: unless-stopped
+    volumes:
+      - ./recordings:/app/recordings
+    command: python src/main.py --objects all
