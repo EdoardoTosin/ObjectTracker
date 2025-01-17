@@ -10,7 +10,10 @@ class ObjectDetector:
         with open(classFile, 'r') as f:
             self.classNames = f.read().strip().split('\n')
         
-        self.net = cv2.dnn_DetectionModel(weightsPath, configPath)
+        net = cv2.dnn.readNetFromTensorflow(weightsPath, configPath)
+        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
+        self.net = cv2.dnn_DetectionModel(net)
         self.net.setInputSize(320, 320)
         self.net.setInputScale(1.0 / 127.5)
         self.net.setInputMean((127.5, 127.5, 127.5))
