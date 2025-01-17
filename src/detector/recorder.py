@@ -1,7 +1,7 @@
-import os
-import cv2
+from os import path
+from cv2 import VideoWriter, VideoWriter_fourcc
 from datetime import datetime
-import logging
+from logging import error, info
 from detector.utils import ensure_folder_exists
 
 class VideoRecorder:
@@ -37,20 +37,20 @@ class VideoRecorder:
         """
         try:
             filename = f"detection_{datetime.now().strftime('%H-%M-%S')}_{self.frame_width}x{self.frame_height}_{int(self.fps)}fps.mp4"
-            file_path = os.path.join(self.output_folder, filename)
+            file_path = path.join(self.output_folder, filename)
             
             ensure_folder_exists(self.output_folder)
             
-            fourcc = cv2.VideoWriter_fourcc(*self.codec)
-            self.output = cv2.VideoWriter(file_path, fourcc, self.fps, (self.frame_width, self.frame_height))
+            fourcc = VideoWriter_fourcc(*self.codec)
+            self.output = VideoWriter(file_path, fourcc, self.fps, (self.frame_width, self.frame_height))
             if not self.output.isOpened():
                 raise IOError(f"Failed to open video file for writing: {file_path}")
             
             self.recording = True
             self.output.write(frame)  # Write the first frame immediately
-            logging.info(f"Recording started: {file_path}")
+            info(f"Recording started: {file_path}")
         except Exception as e:
-            logging.error(f"Failed to start recording: {e}")
+            error(f"Failed to start recording: {e}")
             self.output = None
             self.recording = False
     
@@ -72,4 +72,4 @@ class VideoRecorder:
             self.output.release()
             self.output = None
             self.recording = False
-            logging.info("Recording stopped.")
+            info("Recording stopped.")

@@ -1,4 +1,4 @@
-import cv2
+from cv2 import dnn, dnn_DetectionModel, FONT_HERSHEY_COMPLEX, putText, rectangle
 from config.config import classFile, configPath, weightsPath
 
 class ObjectDetector:
@@ -10,10 +10,10 @@ class ObjectDetector:
         with open(classFile, 'r') as f:
             self.classNames = f.read().strip().split('\n')
         
-        net = cv2.dnn.readNetFromTensorflow(weightsPath, configPath)
-        net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
-        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
-        self.net = cv2.dnn_DetectionModel(net)
+        net = dnn.readNetFromTensorflow(weightsPath, configPath)
+        net.setPreferableBackend(dnn.DNN_BACKEND_OPENCV)
+        net.setPreferableTarget(dnn.DNN_TARGET_CPU)
+        self.net = dnn_DetectionModel(net)
         self.net.setInputSize(320, 320)
         self.net.setInputScale(1.0 / 127.5)
         self.net.setInputMean((127.5, 127.5, 127.5))
@@ -46,9 +46,9 @@ class ObjectDetector:
                     className = self.classNames[classId - 1]
                     if className in self.objects_to_detect:
                         detected_objects.append((box, className, confidence))
-                        cv2.rectangle(frame, box, color=(0, 255, 0), thickness=2)
-                        cv2.putText(frame, f"{className.upper()} {round(confidence * 100, 2)}%",
-                                    (box[0] + 10, box[1] + 30), cv2.FONT_HERSHEY_COMPLEX, 0.6, (0, 255, 0), 2)
+                        rectangle(frame, box, color=(0, 255, 0), thickness=2)
+                        putText(frame, f"{className.upper()} {round(confidence * 100, 2)}%",
+                                    (box[0] + 10, box[1] + 30), FONT_HERSHEY_COMPLEX, 0.6, (0, 255, 0), 2)
         except Exception as e:
             logging.error(f"Object detection failed: {e}")
         

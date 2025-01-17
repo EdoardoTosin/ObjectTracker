@@ -1,5 +1,5 @@
-import os
-import yaml
+from os import listdir, makedirs, path
+from yaml import safe_load
 from datetime import datetime
 
 # Default configuration values
@@ -9,17 +9,17 @@ DEFAULT_RECONNECT_INTERVAL = 5   # Interval (in seconds) to wait before attempti
 DEFAULT_OBJECTS_TO_DETECT = "all"  # Default setting to detect all objects
 
 # Define key paths for models and recordings
-base_path = os.path.dirname(os.path.abspath(__file__))  # Path of the current config script
-project_root = os.path.dirname(os.path.dirname(base_path))  # Root path of the project
-model_path = os.path.join(project_root, "models")  # Path to the folder containing model files
-recordings_folder = os.path.join(project_root, "recordings")  # Path for storing video recordings
+base_path = path.dirname(path.abspath(__file__))  # Path of the current config script
+project_root = path.dirname(path.dirname(base_path))  # Root path of the project
+model_path = path.join(project_root, "models")  # Path to the folder containing model files
+recordings_folder = path.join(project_root, "recordings")  # Path for storing video recordings
 
 # Initialize variables for required model files
 classFile, configPath, weightsPath = None, None, None
 
 # Automatically detect and assign paths for required model files based on their extensions
-for filename in os.listdir(model_path):
-    file_path = os.path.join(model_path, filename)
+for filename in listdir(model_path):
+    file_path = path.join(model_path, filename)
     if filename.endswith(".names"):
         classFile = file_path  # Class names file (list of object classes)
     elif filename.endswith(".pbtxt"):
@@ -44,10 +44,10 @@ def parse_objects_string(objects_string):
     return ["all"] if objects_string.lower() == "all" else [obj.strip() for obj in objects_string.split(',')]
 
 # Load user-specific configuration from the 'config.yaml' file, if available
-config_file_path = os.path.join(base_path, "config.yaml")
-if os.path.exists(config_file_path):
+config_file_path = path.join(base_path, "config.yaml")
+if path.exists(config_file_path):
     with open(config_file_path, "r") as file:
-        user_config = yaml.safe_load(file)  # Load YAML configuration as a dictionary
+        user_config = safe_load(file)  # Load YAML configuration as a dictionary
 else:
     user_config = {}
 
@@ -62,8 +62,8 @@ def ensure_recordings_folder():
     """
     Ensure that the recordings folder exists by creating it if necessary.
     """
-    if not os.path.exists(recordings_folder):
-        os.makedirs(recordings_folder)
+    if not path.exists(recordings_folder):
+        makedirs(recordings_folder)
 
 def get_today_folder():
     """
@@ -74,7 +74,7 @@ def get_today_folder():
     Returns:
         str: Path to today's recordings folder.
     """
-    today_folder = os.path.join(recordings_folder, datetime.now().strftime('%Y-%m-%d'))
-    if not os.path.exists(today_folder):
-        os.makedirs(today_folder)
+    today_folder = path.join(recordings_folder, datetime.now().strftime('%Y-%m-%d'))
+    if not path.exists(today_folder):
+        makedirs(today_folder)
     return today_folder

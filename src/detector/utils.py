@@ -1,5 +1,6 @@
-import os
+from os import makedirs, path
 from datetime import datetime
+from logging import error, info
 
 def ensure_folder_exists(folder_path):
     """
@@ -9,11 +10,11 @@ def ensure_folder_exists(folder_path):
         folder_path (str): Path to the folder to be checked/created.
     """
     try:
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-            logging.info(f"Folder created: {folder_path}")
+        if not path.exists(folder_path):
+            makedirs(folder_path)
+            info(f"Folder created: {folder_path}")
     except Exception as e:
-        logging.error(f"Failed to create folder {folder_path}: {e}")
+        error(f"Failed to create folder {folder_path}: {e}")
         raise
 
 def get_today_folder(base_folder):
@@ -26,7 +27,7 @@ def get_today_folder(base_folder):
     Returns:
         str: Full path to today's folder.
     """
-    today_folder = os.path.join(base_folder, datetime.now().strftime('%Y-%m-%d'))
+    today_folder = path.join(base_folder, datetime.now().strftime('%Y-%m-%d'))
     ensure_folder_exists(today_folder)
     return today_folder
 
