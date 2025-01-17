@@ -24,7 +24,7 @@ CONTAINER_NAME := object-tracker-container
 # Install dependencies
 install: $(VENV_DIR)
 	@echo "Installing dependencies..."
-	$(PIP_VENV) install --user -r requirements.txt
+	$(PIP_VENV) install -r requirements.txt
 	@echo "Dependencies installed."
 
 $(VENV_DIR):
