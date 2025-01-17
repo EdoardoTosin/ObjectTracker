@@ -2,6 +2,7 @@ import os
 import cv2
 from datetime import datetime
 import logging
+from detector.utils import ensure_folder_exists
 
 class VideoRecorder:
     """
