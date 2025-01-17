@@ -109,12 +109,21 @@ if __name__ == "__main__":
     logging.getLogger().setLevel(getattr(logging, args.log_level))
     
     # Ensure that the recordings folder structure exists
-    ensure_recordings_folder()
+    try:
+        ensure_recordings_folder()
+    except Exception as e:
+        logging.error(f"Error while ensuring recordings folder: {e}")
+        sys.exit(1)  # Exit if folder creation fails
     
     # Initialize camera and retrieve its properties
-    camera, frame_width, frame_height, fps = initialize_camera(args.camera_index)
-    if not camera:
-        sys.exit("Error: Unable to initialize the camera.")
+    camera, frame_width, frame_height, fps = None, 0, 0, 0
+    try:
+        camera, frame_width, frame_height, fps = initialize_camera(args.camera_index)
+        if not camera:
+            raise RuntimeError("Unable to initialize the camera.")
+    except Exception as e:
+        logging.error(f"Error initializing camera: {e}")
+        sys.exit(1)
     
     # Set up signal handling for SIGINT and SIGTERM to allow graceful shutdown
     recorder = None
@@ -123,71 +132,85 @@ if __name__ == "__main__":
     
     # Configure object detection based on user arguments or default settings
     object_list = None
-    if args.objects:
-        object_list = [obj.strip() for obj in args.objects.split(',')]  # Trim spaces around separators
-        if "all" in object_list:
-            detector = ObjectDetector(None)  # Detect all possible objects
-            logging.info("Detecting all possible objects.")
+    try:
+        if args.objects:
+            object_list = [obj.strip() for obj in args.objects.split(',')]  # Trim spaces around separators
+            if "all" in object_list:
+                detector = ObjectDetector(None)  # Detect all possible objects
+                logging.info("Detecting all possible objects.")
+            else:
+                from config.config import classFile  # Import path to .names file
+                validate_objects_to_detect(object_list, classFile)  # Validate specified objects
+                detector = ObjectDetector(object_list)
+                logging.info(f"Detecting specified objects: {object_list}")
+        elif default_objects == "all":
+            detector = ObjectDetector(None)  # Detect all possible objects (from config)
+            logging.info("Detecting all possible objects (default config).")
         else:
             from config.config import classFile  # Import path to .names file
-            validate_objects_to_detect(object_list, classFile)  # Validate specified objects
-            detector = ObjectDetector(object_list)
-            logging.info(f"Detecting specified objects: {object_list}")
-    elif default_objects == "all":
-        detector = ObjectDetector(None)  # Detect all possible objects (from config)
-        logging.info("Detecting all possible objects (default config).")
-    else:
-        from config.config import classFile  # Import path to .names file
-        validate_objects_to_detect(default_objects, classFile)  # Validate default objects
-        detector = ObjectDetector(default_objects)
-        logging.info(f"Detecting specified objects from config: {default_objects}")
+            validate_objects_to_detect(default_objects, classFile)  # Validate default objects
+            detector = ObjectDetector(default_objects)
+            logging.info(f"Detecting specified objects from config: {default_objects}")
+    except Exception as e:
+        logging.error(f"Error setting up object detection: {e}")
+        cleanup(camera, recorder)
+        sys.exit(1)
     
     # Prepare the video recorder and set output folder
-    output_folder = get_today_folder()
+    try:
+        output_folder = get_today_folder()
+    except Exception as e:
+        logging.error(f"Error while creating today's folder: {e}")
+        cleanup(camera, recorder)  # Ensure resources are released before exiting
+        sys.exit(1)  # Exit if folder creation fails
+    
     recorder = VideoRecorder(output_folder, frame_width, frame_height, fps, buffer_size)
     
     last_detection_time = 0  # Track the time of the last detection
     
     logging.info("Press 'q' or 'Esc' to exit the program.")
     
-    while True:
-        success, frame = camera.read()
-        if not success:
-            logging.warning("Frame capture failed. Retrying...")
-            continue
-        
-        # Detect objects in the current frame
-        detected_objects = detector.detect(frame)
-        current_time = time.time()
-        detected_names = []
-        
-        if detected_objects:
-            last_detection_time = current_time
-            detected_names = [obj[1] for obj in detected_objects]
-            if not recorder.recording:
-                recorder.start_recording(frame)
-                logging.info(f"Started recording. Detected: {detected_names}")
-        elif recorder.recording and (current_time - last_detection_time > recording_duration):
-            recorder.stop_recording()
-            logging.info("Stopped recording after timeout (no detections).")
-        
-        # Overlay timestamp and detected object information on the frame
-        timestamp = time.strftime("%Y-%m-%d %a %H:%M:%S")
-        detected_info = "Detected: " + ", ".join(detected_names) if detected_objects else "No objects detected"
-        
-        cv2.putText(frame, timestamp, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-        cv2.putText(frame, detected_info, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-        
-        # Write the frame to the video file if recording
-        recorder.write_frame(frame)
-        
-        # Display the live video feed if the window option is enabled
-        if not args.no_window:
-            cv2.imshow("Live Feed", frame)
-            if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:  # Exit on 'q' or 'Esc' key press
-                logging.info("User requested exit. Cleaning up...")
-                break
-    
-    # Release resources and close OpenCV windows before exiting
-    cleanup(camera, recorder)
-    cv2.destroyAllWindows()
+    try:
+        while True:
+            success, frame = camera.read()
+            if not success:
+                logging.warning("Frame capture failed. Retrying...")
+                continue
+            
+            # Detect objects in the current frame
+            detected_objects = detector.detect(frame)
+            current_time = time.time()
+            detected_names = []
+            
+            if detected_objects:
+                last_detection_time = current_time
+                detected_names = [obj[1] for obj in detected_objects]
+                if not recorder.recording:
+                    recorder.start_recording(frame)
+                    logging.info(f"Started recording. Detected: {detected_names}")
+            elif recorder.recording and (current_time - last_detection_time > recording_duration):
+                recorder.stop_recording()
+                logging.info("Stopped recording after timeout (no detections).")
+            
+            # Overlay timestamp and detected object information on the frame
+            timestamp = time.strftime("%Y-%m-%d %a %H:%M:%S")
+            detected_info = "Detected: " + ", ".join(detected_names) if detected_objects else "No objects detected"
+            
+            cv2.putText(frame, timestamp, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            cv2.putText(frame, detected_info, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+            
+            # Write the frame to the video file if recording
+            recorder.write_frame(frame)
+            
+            # Display the live video feed if the window option is enabled
+            if not args.no_window:
+                cv2.imshow("Live Feed", frame)
+                if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:  # Exit on 'q' or 'Esc' key press
+                    logging.info("User requested exit. Cleaning up...")
+                    break
+    except Exception as e:
+        logging.error(f"An error occurred during the main loop: {e}")
+    finally:
+        # Ensure cleanup occurs no matter what
+        cleanup(camera, recorder)
+        cv2.destroyAllWindows()
