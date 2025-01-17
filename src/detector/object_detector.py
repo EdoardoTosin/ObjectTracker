@@ -34,7 +34,7 @@ class ObjectDetector:
             nms_threshold (float): Non-max suppression threshold.
         
         Returns:
-            detected_objects (list): List of detected objects, each represented as a tuple 
+            detected_objects (list): List of detected objects, each represented as a tuple
                                      (bounding box, class name, confidence).
         """
         detected_objects = []
@@ -47,7 +47,7 @@ class ObjectDetector:
                     if className in self.objects_to_detect:
                         detected_objects.append((box, className, confidence))
                         cv2.rectangle(frame, box, color=(0, 255, 0), thickness=2)
-                        cv2.putText(frame, f"{className.upper()} {round(confidence * 100, 2)}%", 
+                        cv2.putText(frame, f"{className.upper()} {round(confidence * 100, 2)}%",
                                     (box[0] + 10, box[1] + 30), cv2.FONT_HERSHEY_COMPLEX, 0.6, (0, 255, 0), 2)
         except Exception as e:
             logging.error(f"Object detection failed: {e}")
