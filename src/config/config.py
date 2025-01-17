@@ -41,9 +41,7 @@ def parse_objects_string(objects_string):
     Returns:
         list: List of trimmed object names (e.g., ['person', 'car', 'traffic light']).
     """
-    if objects_string.lower() == "all":
-        return ["all"]
-    return [obj.strip() for obj in objects_string.split(',')]
+    return ["all"] if objects_string.lower() == "all" else [obj.strip() for obj in objects_string.split(',')]
 
 # Load user-specific configuration from the 'config.yaml' file, if available
 config_file_path = os.path.join(base_path, "config.yaml")

@@ -23,9 +23,9 @@ def cleanup(camera, recorder):
         camera (cv2.VideoCapture): OpenCV camera object.
         recorder (VideoRecorder): Video recorder instance managing video output.
     """
-    if camera is not None:
+    if camera:
         camera.release()
-    if recorder is not None and recorder.recording:
+    if recorder and recorder.recording:
         recorder.stop_recording()
     logging.info("Resources released. Exiting program.")
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     
     # Initialize camera and retrieve its properties
     camera, frame_width, frame_height, fps = initialize_camera(args.camera_index)
-    if camera is None:
+    if not camera:
         sys.exit("Error: Unable to initialize the camera.")
     
     # Set up signal handling for SIGINT and SIGTERM to allow graceful shutdown
@@ -122,6 +122,7 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, lambda sig, frame: signal_handler(sig, frame, camera, recorder))
     
     # Configure object detection based on user arguments or default settings
+    object_list = None
     if args.objects:
         object_list = [obj.strip() for obj in args.objects.split(',')]  # Trim spaces around separators
         if "all" in object_list:
@@ -146,7 +147,6 @@ if __name__ == "__main__":
     recorder = VideoRecorder(output_folder, frame_width, frame_height, fps, buffer_size)
     
     last_detection_time = 0  # Track the time of the last detection
-    recording_active = False  # Flag to manage recording state
     
     logging.info("Press 'q' or 'Esc' to exit the program.")
     
@@ -159,24 +159,23 @@ if __name__ == "__main__":
         # Detect objects in the current frame
         detected_objects = detector.detect(frame)
         current_time = time.time()
+        detected_names = []
         
         if detected_objects:
             last_detection_time = current_time
             detected_names = [obj[1] for obj in detected_objects]
             if not recorder.recording:
                 recorder.start_recording(frame)
-                recording_active = True
-                logging.info(f"Started recording due to detection: {detected_names}")
+                logging.info(f"Started recording. Detected: {detected_names}")
         elif recorder.recording and (current_time - last_detection_time > recording_duration):
             recorder.stop_recording()
-            recording_active = False
             logging.info("Stopped recording after timeout (no detections).")
         
         # Overlay timestamp and detected object information on the frame
         timestamp = time.strftime("%Y-%m-%d %a %H:%M:%S")
-        detected_info = "Detected: " + ", ".join([obj[1] for obj in detected_objects]) if detected_objects else "No objects detected"
+        detected_info = "Detected: " + ", ".join(detected_names) if detected_objects else "No objects detected"
         
-        cv2.putText(frame, f"{timestamp}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+        cv2.putText(frame, timestamp, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
         cv2.putText(frame, detected_info, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         
         # Write the frame to the video file if recording
@@ -185,8 +184,7 @@ if __name__ == "__main__":
         # Display the live video feed if the window option is enabled
         if not args.no_window:
             cv2.imshow("Live Feed", frame)
-            key = cv2.waitKey(1) & 0xFF
-            if key == ord('q') or key == 27:  # Exit on 'q' or 'Esc' key press
+            if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:  # Exit on 'q' or 'Esc' key press
                 logging.info("User requested exit. Cleaning up...")
                 break
     
