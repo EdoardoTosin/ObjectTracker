@@ -13,7 +13,8 @@ from config.config import (
 )
 
 # Configure logging to display timestamp, log level, and message
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s]: %(message)s',
+                    handlers=[logging.StreamHandler(), logging.FileHandler("app.log")])
 
 def cleanup(camera, recorder):
     """
@@ -119,6 +120,7 @@ if __name__ == "__main__":
     camera, frame_width, frame_height, fps = None, 0, 0, 0
     try:
         camera, frame_width, frame_height, fps = initialize_camera(args.camera_index)
+        logging.info(f"Initialized camera with {frame_width}x{frame_height} at {fps:.2f} FPS.")
         if not camera:
             raise RuntimeError("Unable to initialize the camera.")
     except Exception as e:
@@ -167,14 +169,17 @@ if __name__ == "__main__":
     recorder = VideoRecorder(output_folder, frame_width, frame_height, fps, codec='mp4v')
     
     last_detection_time = 0  # Track the time of the last detection
+    frame_interval = 1.0 / fps  # Time interval between frames based on FPS
     
     logging.info("Press 'q' or 'Esc' to exit the program.")
     
     try:
         while True:
+            start_time = time.time()
             success, frame = camera.read()
             if not success:
                 logging.warning("Frame capture failed. Retrying...")
+                time.sleep(reconnect_interval)  # Pause briefly before retrying to reduce CPU usage
                 continue
             
             # Detect objects in the current frame
@@ -201,6 +206,10 @@ if __name__ == "__main__":
             
             # Write the frame to the video file if recording
             recorder.write_frame(frame)
+            
+            elapsed_time = time.time() - start_time
+            delay = max(0, frame_interval - elapsed_time)
+            time.sleep(delay)
             
             # Display the live video feed if the window option is enabled
             if not args.no_window:
