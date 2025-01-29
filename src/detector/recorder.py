@@ -24,7 +24,7 @@ class VideoRecorder:
         self.frame_width = frame_width
         self.frame_height = frame_height
         self.fps = fps
-        self.codec = codec if isinstance(codec, str) and len(codec) == 4 else 'mp4v'
+        self.codec = codec
         self.output = None
         self.recording = False
     
