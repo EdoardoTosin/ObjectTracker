@@ -73,7 +73,7 @@ def parse_arguments():
         "--log-level", type=str, choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         default="INFO", help="Set the logging level (default: INFO)"
     )
-
+    
     return parser.parse_args()
 
 def validate_objects_to_detect(objects, class_file_path):
@@ -164,7 +164,7 @@ if __name__ == "__main__":
         cleanup(camera, recorder)  # Ensure resources are released before exiting
         sys.exit(1)  # Exit if folder creation fails
     
-    recorder = VideoRecorder(output_folder, frame_width, frame_height, fps, buffer_size)
+    recorder = VideoRecorder(output_folder, frame_width, frame_height, fps, codec='mp4v')
     
     last_detection_time = 0  # Track the time of the last detection
     
