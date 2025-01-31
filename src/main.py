@@ -1,5 +1,6 @@
 import logging
 import signal
+from functools import partial
 import sys
 import cv2
 import argparse
@@ -47,7 +48,7 @@ def signal_handler(sig, frame, camera, recorder):
     cv2.destroyAllWindows()
     sys.exit(0)
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     """
     Parse command-line arguments to configure script behavior.
     
@@ -130,8 +131,8 @@ def main():
     
     # Set up signal handling for SIGINT and SIGTERM to allow graceful shutdown
     recorder = None
-    signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, camera, recorder))
-    signal.signal(signal.SIGTERM, lambda sig, frame: signal_handler(sig, frame, camera, recorder))
+    signal.signal(signal.SIGINT, partial(signal_handler, camera=camera, recorder=recorder))
+    signal.signal(signal.SIGTERM, partial(signal_handler, camera=camera, recorder=recorder))
     
     # Configure object detection based on user arguments or default settings
     object_list = None

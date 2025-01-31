@@ -28,7 +28,7 @@ class VideoRecorder:
         self.output = None
         self.recording = False
     
-    def start_recording(self, frame):
+    def start_recording(self, frame=None):
         """
         Starts a new video recording with the given frame.
         

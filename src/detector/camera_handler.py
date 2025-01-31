@@ -34,6 +34,9 @@ def initialize_camera(camera_index=0):
             error("Error: Cannot open camera.")
             return None, None, None, None
         
+        selected_resolution = None
+        selected_fps = None
+        
         for width, height in COMMON_RESOLUTIONS:
             cap.set(CAP_PROP_FRAME_WIDTH, width)
             cap.set(CAP_PROP_FRAME_HEIGHT, height)

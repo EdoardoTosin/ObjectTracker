@@ -11,7 +11,7 @@ def ensure_folder_exists(folder_path):
     """
     try:
         if not path.exists(folder_path):
-            makedirs(folder_path)
+            makedirs(folder_path, exist_ok=True)
             info(f"Folder created: {folder_path}")
     except Exception as e:
         error(f"Failed to create folder {folder_path}: {e}")

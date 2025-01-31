@@ -1,5 +1,6 @@
 from cv2 import dnn, dnn_DetectionModel, FONT_HERSHEY_COMPLEX, putText, rectangle
 from config.config import classFile, configPath, weightsPath
+from logging import error
 
 class ObjectDetector:
     def __init__(self, objects_to_detect=None):
@@ -50,6 +51,6 @@ class ObjectDetector:
                         putText(frame, f"{className.upper()} {round(confidence * 100, 2)}%",
                                     (box[0] + 10, box[1] + 30), FONT_HERSHEY_COMPLEX, 0.6, (0, 255, 0), 2)
         except Exception as e:
-            logging.error(f"Object detection failed: {e}")
+            error(f"Object detection failed: {e}")
         
         return detected_objects
