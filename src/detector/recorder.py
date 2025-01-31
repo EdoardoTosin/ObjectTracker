@@ -47,7 +47,8 @@ class VideoRecorder:
                 raise IOError(f"Failed to open video file for writing: {file_path}")
             
             self.recording = True
-            self.output.write(frame)  # Write the first frame immediately
+            if frame is not None:
+                self.output.write(frame)  # Write the first frame immediately if provided
             info(f"Recording started: {file_path}")
         except Exception as e:
             error(f"Failed to start recording: {e}")
