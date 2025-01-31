@@ -4,11 +4,12 @@ import sys
 import cv2
 import argparse
 import time
+import collections
 from detector.camera_handler import initialize_camera
 from detector.object_detector import ObjectDetector
 from detector.recorder import VideoRecorder
 from config.config import (
-    recording_duration, buffer_size, reconnect_interval, 
+    recording_duration, buffer_size, reconnect_interval,
     ensure_recordings_folder, get_today_folder, objects_to_detect as default_objects
 )
 
@@ -102,7 +103,7 @@ def validate_objects_to_detect(objects, class_file_path):
     
     logging.info(f"All specified objects are valid: {objects}")
 
-if __name__ == "__main__":
+def main():
     # Parse and handle command-line arguments
     args = parse_arguments()
     
@@ -170,6 +171,7 @@ if __name__ == "__main__":
     
     last_detection_time = 0  # Track the time of the last detection
     frame_interval = 1.0 / fps  # Time interval between frames based on FPS
+    frame_buffer = collections.deque(maxlen=int(fps * 5))  # Buffer frames
     
     logging.info("Press 'q' or 'Esc' to exit the program.")
     
@@ -182,6 +184,9 @@ if __name__ == "__main__":
                 time.sleep(reconnect_interval)  # Pause briefly before retrying to reduce CPU usage
                 continue
             
+            # Store frames in buffer for pre-recording effect
+            frame_buffer.append(frame.copy())
+            
             # Detect objects in the current frame
             detected_objects = detector.detect(frame)
             current_time = time.time()
@@ -191,8 +196,10 @@ if __name__ == "__main__":
                 last_detection_time = current_time
                 detected_names = [obj[1] for obj in detected_objects]
                 if not recorder.recording:
-                    recorder.start_recording(frame)
+                    recorder.start_recording()
                     logging.info(f"Started recording. Detected: {detected_names}")
+                    for buffered_frame in frame_buffer:  # Write buffered frames
+                        recorder.write_frame(buffered_frame)
             elif recorder.recording and (current_time - last_detection_time > recording_duration):
                 recorder.stop_recording()
                 logging.info("Stopped recording after timeout (no detections).")
@@ -218,8 +225,11 @@ if __name__ == "__main__":
                     logging.info("User requested exit. Cleaning up...")
                     break
     except Exception as e:
-        logging.error(f"An error occurred during the main loop: {e}")
+        logging.error(f"An error occurred: {e}")
     finally:
         # Ensure cleanup occurs no matter what
         cleanup(camera, recorder)
         cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()
