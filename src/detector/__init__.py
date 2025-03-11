@@ -1,5 +1,5 @@
 """
-The detector module contains components for object detection, 
+The detector module contains components for object detection,
 camera handling, and video recording.
 """
 
