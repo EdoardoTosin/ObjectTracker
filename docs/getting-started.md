@@ -4,7 +4,7 @@
 
 | Requirement | Minimum version |
 |---|---|
-| Python | 3.9 |
+| Python | 3.10 |
 | uv (package manager) | any recent version |
 | Operating system | Windows, macOS, or Linux (Raspberry Pi OS included) |
 | Camera | Any USB camera exposed via V4L2 (Linux) or DirectShow (Windows) |

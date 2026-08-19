@@ -21,7 +21,7 @@ Thank you for your interest in contributing to this project! We welcome all cont
    ```
 
 4. **Install Dependencies**  
-   Ensure you have Python 3.9+ and [uv](https://docs.astral.sh/uv/) installed, then install the project including dev dependencies:
+   Ensure you have Python 3.10+ and [uv](https://docs.astral.sh/uv/) installed, then install the project including dev dependencies:
    ```bash
    uv sync --all-groups
    ```

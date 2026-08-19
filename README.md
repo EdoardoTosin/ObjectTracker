@@ -6,7 +6,7 @@
   <p>Monitors a USB camera in real time and triggers event-based recording when it detects an object.</p>
 
   <p>
-    <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.9%2B-blue?logo=python&logoColor=white&style=for-the-badge" alt="Python 3.9+"></a>
+    <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.10%2B-blue?logo=python&logoColor=white&style=for-the-badge" alt="Python 3.10+"></a>
     <a href="https://opencv.org/"><img src="https://img.shields.io/badge/vision-OpenCV-5C3EE8?logo=opencv&logoColor=white&style=for-the-badge" alt="OpenCV"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT License"></a>
   </p>
@@ -14,7 +14,7 @@
 
 ## Requirements
 
-- Python ≥ 3.9
+- Python ≥ 3.10
 - [uv](https://docs.astral.sh/uv/)
 - A USB camera
 
