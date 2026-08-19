@@ -11,7 +11,7 @@ Thank you for your interest in contributing to this project! We welcome all cont
    Clone your forked repository to your local machine:
    ```bash
    git clone https://github.com/EdoardoTosin/ObjectTracker
-   cd Object-Tracker
+   cd ObjectTracker
    ```
 
 3. **Create a Branch**  
@@ -21,22 +21,28 @@ Thank you for your interest in contributing to this project! We welcome all cont
    ```
 
 4. **Install Dependencies**  
-   Ensure you have Python 3.9+ installed. Install the required dependencies using:
+   Ensure you have Python 3.9+ and [uv](https://docs.astral.sh/uv/) installed, then install the project including dev dependencies:
    ```bash
-   pip install --user -r requirements.txt
+   uv sync --all-groups
    ```
 
-5. **Run Tests**  
-   Ensure that your changes pass all the existing tests, and write new tests if necessary:
+5. **Run the Checks**  
+   Ensure your changes pass linting, formatting, type-checking, and the test suite before opening a pull request:
    ```bash
-   pytest
+   uv run ruff check src/ tests/
+   uv run black --check src/ tests/
+   uv run mypy src/
+   uv run pytest
    ```
 
 ## Making Changes
 
-- Follow the existing code style.  
-- Add appropriate documentation for new features.  
-- Make sure that your code is properly formatted before submitting a pull request.
+See [docs/development.md](docs/development.md) for the architecture and testing approach before making non-trivial changes.
+
+- Follow the existing code style; `ruff` and `black` enforce most of it automatically.
+- Keep engines/modules stateless where possible and prefer small, pure, testable functions over large stateful ones.
+- Add or update tests for any behavioral change: `pytest` runs with coverage enabled and fails below the threshold set in `pyproject.toml`.
+- Add appropriate documentation for new features (README and/or `docs/`).
 
 ## Submitting a Pull Request
 
@@ -64,7 +70,5 @@ If you encounter any issues or have feature suggestions, please open an issue on
 ## Licensing
 
 By contributing to this project, you agree that your contributions will be licensed under the same license as the project.
-
----
 
 Thank you for contributing!

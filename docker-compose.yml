@@ -1,10 +1,11 @@
-version: "3.9"
-
 services:
   object-tracker:
     build: .
     container_name: object-tracker
     restart: unless-stopped
+    devices:
+      - /dev/video0:/dev/video0
     volumes:
       - ./recordings:/app/recordings
-    command: python src/main.py --objects all
+      - ./config.yaml:/app/config.yaml:ro
+    command: ["--objects", "all"]

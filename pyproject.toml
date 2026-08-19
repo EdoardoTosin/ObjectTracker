@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "object-tracker"
+dynamic = ["version"]
+description = "Monitors a USB camera in real time and triggers event-based recording when it detects an object."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Edoardo Tosin" }]
+requires-python = ">=3.9"
+dependencies = [
+    "opencv-python>=5.0.0",
+    "numpy>=1.26.0",
+    "PyYAML>=6.0.3",
+    "typer>=0.12.0",
+    "rich>=15.0.0",
+]
+
+[project.scripts]
+object-tracker = "object_tracker.__main__:main"
+
+[tool.hatch.version]
+path = "src/object_tracker/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/object_tracker"]
+
+[dependency-groups]
+dev = [
+    "black>=25.0",
+    "mypy>=1.10",
+    "pytest>=8.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.3",
+    "types-PyYAML>=6.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short --cov=object_tracker --cov-fail-under=85"
+
+[tool.coverage.run]
+source = ["src/object_tracker"]
+omit = ["*/__main__.py", "*/cli.py", "*/tracker.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
+
+[tool.black]
+target-version = ["py39"]
+line-length = 88
+
+[tool.mypy]
+ignore_missing_imports = true
+warn_unused_ignores = false

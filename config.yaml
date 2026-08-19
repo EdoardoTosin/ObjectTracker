@@ -1,0 +1,18 @@
+# ObjectTracker configuration.
+# CLI flags always take precedence over these values when explicitly passed.
+
+# Objects to detect: 'all', or a comma-separated list (e.g. "person, car, traffic light")
+objects_to_detect: "person, car, traffic light"
+
+# Recording
+recording_duration: 30 # seconds to keep recording after the last detection
+buffer_seconds: 10 # seconds of pre-detection frames to buffer
+reconnect_interval: 5 # seconds between camera reconnection attempts
+
+# Detection
+confidence_threshold: 0.45
+nms_threshold: 0.2
+
+# Paths (relative to the current working directory, or absolute)
+models_dir: models
+recordings_folder: recordings

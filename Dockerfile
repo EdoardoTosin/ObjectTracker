@@ -1,22 +1,25 @@
-# Use the official Python 3.9 slim image as a base
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
-# Set working directory
+# Runtime libraries required by OpenCV's video I/O and GUI backends.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 WORKDIR /app
 
-# Copy the project files into the container
-COPY . /app
+# Install dependencies first so the layer cache survives source-only changes.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-install-project --no-dev
 
-# Install necessary dependencies
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+COPY . .
+RUN uv sync --locked --no-dev
 
-# Expose the port (if the script uses a web interface)
-# EXPOSE 5000
-
-# Default command to run the main script
-CMD ["python", "src/main.py"]
+ENTRYPOINT ["uv", "run", "object-tracker"]
+CMD ["--no-window", "--objects", "all"]
