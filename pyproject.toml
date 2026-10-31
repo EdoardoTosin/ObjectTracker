@@ -29,7 +29,7 @@ packages = ["src/object_tracker"]
 
 [dependency-groups]
 dev = [
-    "black>=25.0",
+    "black>=26.10.1",
     "mypy>=1.10",
     "pytest>=8.0",
     "pytest-cov>=7.1.0",
